@@ -535,7 +535,7 @@ body.liclock .app,body.liclock .zm,body.liclock .auth:not(#lic),body.liclock .up
 #lic .auth-code{font-size:17px}
 </style>
 </head><body>
-<!--QULAY-PRAYS-BUILD:12-->
+<!--QULAY-PRAYS-BUILD:13-->
 <div class="upd" id="upd" hidden role="status"><span id="upd-t"></span><button type="button" class="btn" id="upd-go">Yangilash</button><button type="button" class="btn" id="upd-x" aria-label="Yopish" title="Yopish">&times;</button></div>
 <div class="auth" id="lic" hidden><form class="auth-c" id="lic-f" autocomplete="off">
 <h2>Dasturni ochish</h2>
@@ -1214,6 +1214,7 @@ body.liclock .app,body.liclock .zm,body.liclock .auth:not(#lic),body.liclock .up
     <div class="tb">
       <label class="tb-l" for="t-name">Qidiruv (F7)</label>
       <input id="t-name" class="field tb-in" type="search" autocomplete="off" aria-label="Dori nomi bo'yicha qidirish">
+      <button type="button" class="btn" id="t-upload" title="Excel dan prays yuklash">Prays yuklash</button>
       <span class="tb-sp"></span>
       <span class="tb-sum mono" id="t-sum" title="Zakaz summasi (so'm)">0</span>
       <button type="button" class="icbtn" id="t-edit" title="Tanlangan qatorning firmasini ochish" aria-label="Tanlangan qatorning firmasini ochish">&#9998;</button>
@@ -2762,6 +2763,7 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
     })();
     $("#tab-home").addEventListener("click", function(){ if (view === "price") resetPriceForm(); });
     wireSettings();
+    $("#t-upload").addEventListener("click", function(){ var a = $("#a-upload"); if (a) a.click(); });
     $("#o-add").addEventListener("click", function(){ switchView("search"); });
     var askKind = "firm";
     function askRow(){
@@ -3880,7 +3882,7 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
 <script>
 
 (function(){
-  var BUILD = 12, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
+  var BUILD = 13, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
   var DESK = /Electron/.test(navigator.userAgent);
   if (DESK && !window.qpDesktop){ var sc = document.getElementById("set-hup"); if (sc && sc.parentNode) sc.parentNode.hidden = true; return; }
   function $(s){ return document.querySelector(s); }
