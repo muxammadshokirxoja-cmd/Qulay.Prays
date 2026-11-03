@@ -536,7 +536,7 @@ body.authlock .upd{display:none}
 </style>
 
 </head><body>
-<!--QULAY-PRAYS-BUILD:15-->
+<!--QULAY-PRAYS-BUILD:16-->
 <div class="upd" id="upd" hidden role="status"><span id="upd-t"></span><button type="button" class="btn" id="upd-go">Yangilash</button><button type="button" class="btn" id="upd-x" aria-label="Yopish" title="Yopish">&times;</button></div>
 <script>
 /* ===== Oflayn rejim: Claude bazasi o'rniga shu kompyuterdagi brauzer xotirasi ===== */
@@ -3084,7 +3084,9 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
       function upd(){
         var vp = $("#view-price"), vis = !!(vp && !vp.hidden && g.offsetParent !== null);
         root.classList.toggle("pvlock", vis); jb.hidden = !vis;
-        if (vis){ window.scrollTo(0, 0); var top = g.getBoundingClientRect().top; g.style.maxHeight = Math.max(160, window.innerHeight - top - 14) + "px"; }
+        if (vis){ window.scrollTo(0, 0); var gr = g.getBoundingClientRect(), tail = vp.getBoundingClientRect().bottom - gr.bottom; g.style.maxHeight = Math.max(160, window.innerHeight - gr.top - tail - 16) + "px";
+          var over = vp.getBoundingClientRect().bottom - (window.innerHeight - 16);
+          if (Math.abs(over) > 2){ var mh = parseFloat(g.style.maxHeight) - over; g.style.maxHeight = Math.max(160, mh) + "px"; } }
         else g.style.maxHeight = "";
       }
       $("#pv-top").addEventListener("click", function(){ g.scrollTop = 0; });
@@ -3922,7 +3924,7 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
 <script>
 
 (function(){
-  var BUILD = 15, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
+  var BUILD = 16, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
   var DESK = /Electron/.test(navigator.userAgent);
   if (DESK && !window.qpDesktop){ var sc = document.getElementById("set-hup"); if (sc && sc.parentNode) sc.parentNode.hidden = true; return; }
   function $(s){ return document.querySelector(s); }
