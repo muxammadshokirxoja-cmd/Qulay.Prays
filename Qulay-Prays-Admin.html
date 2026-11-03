@@ -216,10 +216,12 @@ html.big body{padding-left:max(6px, env(safe-area-inset-left, 0px));padding-righ
 .jump button{width:30px;height:30px;border-radius:50%;border:2px solid var(--accent);background:var(--surface);color:var(--accent);font-size:12px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18)}
 .jump button:hover{background:var(--accent);color:var(--accent-fg)}
 html.pvlock,html.pvlock body{overflow:hidden!important;height:100%}
-#pv-jump{position:fixed;right:max(24px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:6px;z-index:20}
-#pv-jump[hidden]{display:none}
-#pv-jump button{width:30px;height:30px;border-radius:50%;border:2px solid var(--accent);background:var(--surface);color:var(--accent);font-size:12px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18)}
-#pv-jump button:hover{background:var(--accent);color:var(--accent-fg)}
+.pv-grid{border:2px solid var(--accent)}
+.pv-tool .pv-warn{margin-left:auto}
+.pv-foot{display:flex;align-items:center;justify-content:space-between;gap:10px}.pv-foot .hint{margin:0}
+#pv-top,#pv-end{flex:none;width:34px;height:34px;border-radius:50%;border:2px solid var(--accent);background:var(--surface);color:var(--accent);font-size:14px;line-height:1;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+#pv-top:hover,#pv-end:hover{background:var(--accent);color:var(--accent-fg)}
+#pv-top[hidden],#pv-end[hidden]{display:none}
 .pill{border:1px solid var(--accent);background:var(--surface);color:var(--accent);border-radius:99px;padding:7px 18px;font-weight:600;cursor:pointer}
 .pill[aria-expanded="true"]{background:var(--accent);color:var(--accent-fg)}
 .ob{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between}
@@ -536,7 +538,7 @@ body.authlock .upd{display:none}
 </style>
 
 </head><body>
-<!--QULAY-PRAYS-BUILD:16-->
+<!--QULAY-PRAYS-BUILD:17-->
 <div class="upd" id="upd" hidden role="status"><span id="upd-t"></span><button type="button" class="btn" id="upd-go">Yangilash</button><button type="button" class="btn" id="upd-x" aria-label="Yopish" title="Yopish">&times;</button></div>
 <script>
 /* ===== Oflayn rejim: Claude bazasi o'rniga shu kompyuterdagi brauzer xotirasi ===== */
@@ -1057,6 +1059,7 @@ body.authlock .upd{display:none}
           <button type="button" class="pv-link" id="pb-pick"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="M15 15l6 6"/></svg><span>Excel dan prays yuklash</span></button>
           <input id="pb-file" type="file" accept=".xlsx,.xls,.csv" hidden>
           <span class="pv-warn" title="Excel faylni tanlang (.xlsx, .xls, .csv). Dastur ustunlarni o'zi topadi. Kerak bo'lsa «Sozlash» bo'limida o'zgartiring, so'ng «Ma'lumotlarni yuklash»ni bosing."><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 21h20z"/><path d="M12 10v5M12 18v.01"/></svg>Diqqat</span>
+          <button type="button" id="pv-top" hidden aria-label="Eng yuqoriga" title="Eng yuqoriga">&#9650;</button>
         </div>
         <div class="pv-range" id="pb-range" hidden>
           <div class="pb-f" id="pb-sheet-wrap" hidden><label class="flab" for="pb-sheet">Varaq</label><select id="pb-sheet" class="field"></select></div>
@@ -1066,8 +1069,7 @@ body.authlock .upd{display:none}
         </div>
         <p class="hint" id="pb-status">Excel faylni tanlang. Dastur ustunlarni o'zi topadi, so'ng «Ma'lumotlarni yuklash»ni bosing.</p>
         <div class="pv-grid"><table class="pgrid" id="pb-grid"></table></div>
-        <div id="pv-jump" hidden><button type="button" id="pv-top" aria-label="Eng yuqoriga" title="Eng yuqoriga">&#9650;</button><button type="button" id="pv-end" aria-label="Eng pastga" title="Eng pastga">&#9660;</button></div>
-        <p class="hint" id="pb-sum"></p>
+        <div class="pv-foot"><p class="hint" id="pb-sum"></p><button type="button" id="pv-end" hidden aria-label="Eng pastga" title="Eng pastga">&#9660;</button></div>
       </div>
       <div class="pv-pane" id="pt-set" hidden>
         <div class="pb-grid">
@@ -3080,10 +3082,10 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
     $("#pb-book").addEventListener("click", askCommit);
     $("#pb-pick").addEventListener("click", function(){ $("#pb-file").click(); });
     (function(){
-      var g = document.querySelector(".pv-grid"), jb = $("#pv-jump"), root = document.documentElement;
+      var g = document.querySelector(".pv-grid"), jb = $("#pv-end"), jt = $("#pv-top"), root = document.documentElement;
       function upd(){
         var vp = $("#view-price"), vis = !!(vp && !vp.hidden && g.offsetParent !== null);
-        root.classList.toggle("pvlock", vis); jb.hidden = !vis;
+        root.classList.toggle("pvlock", vis); jb.hidden = !vis; jt.hidden = !vis;
         if (vis){ window.scrollTo(0, 0); var gr = g.getBoundingClientRect(), tail = vp.getBoundingClientRect().bottom - gr.bottom; g.style.maxHeight = Math.max(160, window.innerHeight - gr.top - tail - 16) + "px";
           var over = vp.getBoundingClientRect().bottom - (window.innerHeight - 16);
           if (Math.abs(over) > 2){ var mh = parseFloat(g.style.maxHeight) - over; g.style.maxHeight = Math.max(160, mh) + "px"; } }
@@ -3924,7 +3926,7 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
 <script>
 
 (function(){
-  var BUILD = 16, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
+  var BUILD = 17, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
   var DESK = /Electron/.test(navigator.userAgent);
   if (DESK && !window.qpDesktop){ var sc = document.getElementById("set-hup"); if (sc && sc.parentNode) sc.parentNode.hidden = true; return; }
   function $(s){ return document.querySelector(s); }
