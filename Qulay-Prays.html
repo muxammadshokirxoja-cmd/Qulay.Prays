@@ -535,7 +535,7 @@ body.liclock .app,body.liclock .zm,body.liclock .auth:not(#lic),body.liclock .up
 #lic .auth-code{font-size:17px}
 </style>
 </head><body>
-<!--QULAY-PRAYS-BUILD:5-->
+<!--QULAY-PRAYS-BUILD:6-->
 <div class="upd" id="upd" hidden role="status"><span id="upd-t"></span><button type="button" class="btn" id="upd-go">Yangilash</button><button type="button" class="btn" id="upd-x" aria-label="Yopish" title="Yopish">&times;</button></div>
 <div class="auth" id="lic" hidden><form class="auth-c" id="lic-f" autocomplete="off">
 <h2>Dasturni ochish</h2>
@@ -3054,16 +3054,20 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
     return parseDate(cellStr(v));
   }
   function detectHeader(rows){
+    var best = null, STR = /годн|yaroq|expir|amal qil/i;
     for (var r = 0; r < Math.min(rows.length, 25); r++){
-      var map = {name:-1, price:-1, expiry:-1, maker:-1}, score = 0;
+      var map = {name:-1, price:-1, expiry:-1, maker:-1}, score = 0, strong = false;
       (rows[r] || []).forEach(function(c, i){
         var t = cellStr(c); if (!t) return;
+        if (!strong && STR.test(t) && COLS[2].re.test(t)){ if (map.expiry === -1) score++; map.expiry = i; strong = true; return; }
         for (var j = 0; j < COLS.length; j++){
           if (map[COLS[j].k] === -1 && COLS[j].re.test(t)){ map[COLS[j].k] = i; score++; break; }
         }
       });
-      if (score >= 2) return {header:r, map:map};
+      if (score >= 2 && (!best || score > best.score)) best = {header:r, map:map, score:score};
+      if (score >= 4) break;
     }
+    if (best) return {header:best.header, map:best.map};
     return {header:-1, map:{name:0, price:1, expiry:2, maker:3}};
   }
   function maxCols(){
@@ -3737,7 +3741,7 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
 <script>
 
 (function(){
-  var BUILD = 5, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
+  var BUILD = 6, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
   var DESK = /Electron/.test(navigator.userAgent);
   if (DESK && !window.qpDesktop){ var sc = document.getElementById("set-hup"); if (sc && sc.parentNode) sc.parentNode.hidden = true; return; }
   function $(s){ return document.querySelector(s); }
