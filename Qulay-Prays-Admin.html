@@ -531,7 +531,7 @@ body.authlock .upd{display:none}
 </style>
 
 </head><body>
-<!--QULAY-PRAYS-BUILD:3-->
+<!--QULAY-PRAYS-BUILD:5-->
 <div class="upd" id="upd" hidden role="status"><span id="upd-t"></span><button type="button" class="btn" id="upd-go">Yangilash</button><button type="button" class="btn" id="upd-x" aria-label="Yopish" title="Yopish">&times;</button></div>
 <script>
 /* ===== Oflayn rejim: Claude bazasi o'rniga shu kompyuterdagi brauzer xotirasi ===== */
@@ -1078,7 +1078,6 @@ body.authlock .upd{display:none}
         </div></div>
       <div class="set-r"><span class="set-n">Umumiy ro'yxat jadvali shrifti</span>
         <span class="set-st"><button type="button" class="btn" id="set-fs-dn" aria-label="Kichraytirish">&minus;</button><b id="set-fs-v" class="mono">12</b><button type="button" class="btn" id="set-fs-up" aria-label="Kattalashtirish">+</button></span></div>
-      <div class="set-r"><span class="set-n">Ekran o'lchami</span><button type="button" class="btn" id="set-zoom">To'liq ekran / kichik</button></div>
     </section>
     <section class="set-g" aria-labelledby="set-hup">
       <h3 id="set-hup">Yangilanish</h3>
@@ -1173,9 +1172,6 @@ body.authlock .upd{display:none}
     </div>
     <div id="ord-body" class="osplit"></div>
   </main>
-</div>
-<div class="zm" id="zm">
-  <button type="button" id="zm-b" aria-pressed="true"><span id="zm-i" aria-hidden="true">&#10530;</span><span id="zm-t">Kichraytirish</span></button>
 </div>
 <div class="auth" id="auth" hidden><form class="auth-c" id="auth-c" autocomplete="on"></form></div>
 <div id="toast" role="status" hidden></div>
@@ -2348,7 +2344,6 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
     });
     $("#set-fs-dn").addEventListener("click", function(){ $("#t-fs-dn").click(); renderSettings(); });
     $("#set-fs-up").addEventListener("click", function(){ $("#t-fs-up").click(); renderSettings(); });
-    $("#set-zoom").addEventListener("click", function(){ $("#zm-b").click(); });
   }
 
   /* ---------- Bosh sahifa ---------- */
@@ -2565,40 +2560,15 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
       }
       delete btn.dataset.armed; btn.classList.remove("armed"); btn.textContent = label; fn();
     }
-    /* Umumiy masshtab: bir tugma — bosilganda to'liq ekran (katta), yana bosilganda kichik; butun dastur teng o'zgaradi */
+    /* Masshtab: oyna kengligiga qarab avtomatik */
     (function(){
-      var SMALL = 0.7, big = true;
-      try { big = localStorage.getItem("zakas.big") !== "0"; } catch(e){}
-      var fs = function(){ return document.fullscreenElement || document.webkitFullscreenElement; };
       function applyZoom(){
-        var z = big ? Math.min(2.2, Math.max(1, window.innerWidth / 1192)) : SMALL;
+        var z = Math.min(2.2, Math.max(1, window.innerWidth / 1192));
         document.body.style.zoom = z === 1 ? "" : String(z);
-        document.documentElement.classList.toggle("big", big);
+        document.documentElement.classList.add("big");
         document.documentElement.style.setProperty("--avail", (window.innerHeight / z) + "px");
-        $("#zm").style.zoom = z === 1 ? "" : String(1 / z);
-        $("#zm-t").textContent = big ? "Kichraytirish" : "To'liq ekran";
-        $("#zm-i").innerHTML = big ? "&#10531;" : "&#10530;";
-        $("#zm-b").setAttribute("aria-pressed", big ? "true" : "false");
-        $("#zm-b").title = big ? "Dasturni kichraytirish" : "Dasturni to'liq ekranga kattalashtirish";
-        try { localStorage.setItem("zakas.big", big ? "1" : "0"); } catch(e){}
       }
-      function enterFS(){
-        var el = document.documentElement, f = el.requestFullscreen || el.webkitRequestFullscreen;
-        if (f && !fs()) { try { var r = f.call(el); if (r && r.catch) r.catch(function(){}); } catch(e){} }
-      }
-      function exitFS(){
-        var f = document.exitFullscreen || document.webkitExitFullscreen;
-        if (f && fs()) { try { var r = f.call(document); if (r && r.catch) r.catch(function(){}); } catch(e){} }
-      }
-      $("#zm-b").addEventListener("click", function(){
-        big = !big; applyZoom();
-        if (big) enterFS(); else exitFS();
-      });
-      document.addEventListener("fullscreenchange", function(){
-        if (!fs() && big && document.body.dataset.fsOn){ big = false; applyZoom(); }
-        document.body.dataset.fsOn = fs() ? "1" : "";
-      });
-      window.addEventListener("resize", function(){ if (big) applyZoom(); });
+      window.addEventListener("resize", applyZoom);
       applyZoom();
     })();
     $("#tab-home").addEventListener("click", function(){ if (view === "price") resetPriceForm(); });
@@ -3789,7 +3759,7 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
 <script>
 
 (function(){
-  var BUILD = 3, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
+  var BUILD = 5, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
   var DESK = /Electron/.test(navigator.userAgent);
   if (DESK && !window.qpDesktop){ var sc = document.getElementById("set-hup"); if (sc && sc.parentNode) sc.parentNode.hidden = true; return; }
   function $(s){ return document.querySelector(s); }
