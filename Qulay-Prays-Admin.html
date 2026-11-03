@@ -219,9 +219,17 @@ html.pvlock,html.pvlock body{overflow:hidden!important;height:100%}
 .pv-grid{border:2px solid var(--accent)}
 .pv-tool .pv-warn{margin-left:auto}
 .pv-foot{display:flex;align-items:center;justify-content:space-between;gap:10px}.pv-foot .hint{margin:0}
-#pv-top,#pv-end{flex:none;width:34px;height:34px;border-radius:50%;border:2px solid var(--accent);background:var(--surface);color:var(--accent);font-size:14px;line-height:1;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+#pv-top,#pv-end{flex:none;width:26px;height:26px;border-radius:50%;border:2px solid var(--accent);background:var(--surface);color:var(--accent);font-size:11px;line-height:1;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.15)}
 #pv-top:hover,#pv-end:hover{background:var(--accent);color:var(--accent-fg)}
 #pv-top[hidden],#pv-end[hidden]{display:none}
+#pb-pick{padding:5px 12px;gap:6px;font-size:13px;border-radius:8px}#pb-pick svg{width:17px;height:17px}
+html #view-price.pview{gap:8px;padding:12px}html #view-price .pv-pane{padding:8px;gap:6px}
+html #pb-grid{font-size:var(--pgfs,11px)}
+html #pb-grid th,html #pb-grid td{padding:1px 6px}
+html #pb-grid tbody td{height:var(--pgrh,22px);line-height:calc(var(--pgrh,22px) - 6px)}
+html #pb-grid .gsel{font-size:calc(var(--pgfs,11px) - 1px);padding:1px 2px}
+.pv-fs{display:inline-flex;gap:4px}.pv-fs button{flex:none;min-width:26px;height:26px;border-radius:7px;border:2px solid var(--accent);background:var(--surface);color:var(--accent);font-weight:700;font-size:11px;cursor:pointer;padding:0 5px}
+.pv-fs button:hover{background:var(--accent);color:var(--accent-fg)}.pv-fs button:disabled{opacity:.4;cursor:default}
 .pill{border:1px solid var(--accent);background:var(--surface);color:var(--accent);border-radius:99px;padding:7px 18px;font-weight:600;cursor:pointer}
 .pill[aria-expanded="true"]{background:var(--accent);color:var(--accent-fg)}
 .ob{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between}
@@ -538,7 +546,7 @@ body.authlock .upd{display:none}
 </style>
 
 </head><body>
-<!--QULAY-PRAYS-BUILD:17-->
+<!--QULAY-PRAYS-BUILD:18-->
 <div class="upd" id="upd" hidden role="status"><span id="upd-t"></span><button type="button" class="btn" id="upd-go">Yangilash</button><button type="button" class="btn" id="upd-x" aria-label="Yopish" title="Yopish">&times;</button></div>
 <script>
 /* ===== Oflayn rejim: Claude bazasi o'rniga shu kompyuterdagi brauzer xotirasi ===== */
@@ -1059,6 +1067,7 @@ body.authlock .upd{display:none}
           <button type="button" class="pv-link" id="pb-pick"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="M15 15l6 6"/></svg><span>Excel dan prays yuklash</span></button>
           <input id="pb-file" type="file" accept=".xlsx,.xls,.csv" hidden>
           <span class="pv-warn" title="Excel faylni tanlang (.xlsx, .xls, .csv). Dastur ustunlarni o'zi topadi. Kerak bo'lsa «Sozlash» bo'limida o'zgartiring, so'ng «Ma'lumotlarni yuklash»ni bosing."><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 21h20z"/><path d="M12 10v5M12 18v.01"/></svg>Diqqat</span>
+          <span class="pv-fs" id="pv-fs" hidden><button type="button" id="pv-fdn" title="Shriftni kichraytirish" aria-label="Shriftni kichraytirish">A&minus;</button><button type="button" id="pv-fup" title="Shriftni kattalashtirish" aria-label="Shriftni kattalashtirish">A+</button></span>
           <button type="button" id="pv-top" hidden aria-label="Eng yuqoriga" title="Eng yuqoriga">&#9650;</button>
         </div>
         <div class="pv-range" id="pb-range" hidden>
@@ -3085,12 +3094,22 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
       var g = document.querySelector(".pv-grid"), jb = $("#pv-end"), jt = $("#pv-top"), root = document.documentElement;
       function upd(){
         var vp = $("#view-price"), vis = !!(vp && !vp.hidden && g.offsetParent !== null);
-        root.classList.toggle("pvlock", vis); jb.hidden = !vis; jt.hidden = !vis;
+        root.classList.toggle("pvlock", vis); jb.hidden = !vis; jt.hidden = !vis; $("#pv-fs").hidden = !vis;
         if (vis){ window.scrollTo(0, 0); var gr = g.getBoundingClientRect(), tail = vp.getBoundingClientRect().bottom - gr.bottom; g.style.maxHeight = Math.max(160, window.innerHeight - gr.top - tail - 16) + "px";
           var over = vp.getBoundingClientRect().bottom - (window.innerHeight - 16);
           if (Math.abs(over) > 2){ var mh = parseFloat(g.style.maxHeight) - over; g.style.maxHeight = Math.max(160, mh) + "px"; } }
         else g.style.maxHeight = "";
       }
+      var PFS = 11; try { var sv = parseInt(localStorage.getItem("qp.pgfs"), 10); if (sv >= 8 && sv <= 20) PFS = sv; } catch(e){}
+      function applyPfs(redraw){
+        root.style.setProperty("--pgfs", PFS + "px"); root.style.setProperty("--pgrh", (PFS + 11) + "px"); RAW_H = PFS + 11;
+        $("#pv-fdn").disabled = PFS <= 8; $("#pv-fup").disabled = PFS >= 20;
+        try { localStorage.setItem("qp.pgfs", String(PFS)); } catch(e){}
+        if (redraw && pb.rows.length) renderRawGrid();
+      }
+      $("#pv-fdn").addEventListener("click", function(){ if (PFS > 8){ PFS--; applyPfs(true); } });
+      $("#pv-fup").addEventListener("click", function(){ if (PFS < 20){ PFS++; applyPfs(true); } });
+      applyPfs(false);
       $("#pv-top").addEventListener("click", function(){ g.scrollTop = 0; });
       $("#pv-end").addEventListener("click", function(){ g.scrollTop = g.scrollHeight; });
       window.addEventListener("resize", upd); setInterval(upd, 400);
@@ -3340,7 +3359,7 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
     fr.append(tb);
     t.replaceChildren(fr);
   }
-  var RAW_H = 24;
+  var RAW_H = 22;
   var ROLE_LABEL = {name:"Dori nomi", price:"Narxi", expiry:"Amal qilish muddati", maker:"Ishlab chiqaruvchi"};
   function fmtCell(v, role){
     if (role === "price") return typeof v === "number" ? fmtPrice(v) : cellStr(v);
@@ -3926,7 +3945,7 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
 <script>
 
 (function(){
-  var BUILD = 17, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
+  var BUILD = 18, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
   var DESK = /Electron/.test(navigator.userAgent);
   if (DESK && !window.qpDesktop){ var sc = document.getElementById("set-hup"); if (sc && sc.parentNode) sc.parentNode.hidden = true; return; }
   function $(s){ return document.querySelector(s); }
