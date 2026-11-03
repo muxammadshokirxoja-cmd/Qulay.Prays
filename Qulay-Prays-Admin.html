@@ -531,7 +531,7 @@ body.authlock .upd{display:none}
 </style>
 
 </head><body>
-<!--QULAY-PRAYS-BUILD:11-->
+<!--QULAY-PRAYS-BUILD:12-->
 <div class="upd" id="upd" hidden role="status"><span id="upd-t"></span><button type="button" class="btn" id="upd-go">Yangilash</button><button type="button" class="btn" id="upd-x" aria-label="Yopish" title="Yopish">&times;</button></div>
 <script>
 /* ===== Oflayn rejim: Claude bazasi o'rniga shu kompyuterdagi brauzer xotirasi ===== */
@@ -1275,8 +1275,7 @@ body.authlock .upd{display:none}
         <button type="button" class="btn" id="o-add" title="Umumiy ro'yxatga o'tib dori qo'shish">+ Qo'shish</button>
       </div>
       <div class="ob-g">
-        <span class="xw"><button type="button" class="btn primary" id="o-tg" title="Zakazni faylga saqlab, Telegramga yuborish">Telegramga yuborish</button><button type="button" class="btn primary" id="o-tgf" title="Fayl turini tanlash" aria-haspopup="true" aria-expanded="false" style="margin-left:2px;padding-left:10px;padding-right:10px">&#9662;</button><div class="xm" id="o-tgm" role="menu" hidden><button type="button" role="menuitem" data-tg="xlsx">Excel (.xlsx) fayl</button><button type="button" role="menuitem" data-tg="docx">Word (.docx) fayl</button><button type="button" role="menuitem" data-tg="pdf">PDF (.pdf) fayl</button><button type="button" role="menuitem" data-tg="txt">Faqat matn</button></div></span>
-        <button type="button" class="btn" id="o-save" title="Zakazni tarixga saqlash">Tarixga saqlash</button>
+                <button type="button" class="btn" id="o-save" title="Zakazni tarixga saqlash">Tarixga saqlash</button>
         <span class="xw"><button type="button" class="btn" id="o-dl" aria-haspopup="true" aria-expanded="false">Yuklab olish &#9662;</button>
           <div class="xm" id="o-dlm" role="menu" hidden>
             <button type="button" role="menuitem" data-fmt="xlsx">Excel (.xlsx)</button>
@@ -2195,7 +2194,7 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
     var box = $("#ord-body"); box.replaceChildren();
     var D = ordData();
     if (!D.lines.length) $("#o-ask").hidden = true;
-    ["o-delfirm", "o-dl", "o-delrow", "o-clear", "o-tg", "o-tgf", "o-save"].forEach(function(id){ $("#" + id).disabled = !D.lines.length; });
+    ["o-delfirm", "o-dl", "o-delrow", "o-clear", "o-save"].forEach(function(id){ $("#" + id).disabled = !D.lines.length; });
     var HEAD = function(){ return h("div", {class:"otr oth"}, h("div", {text:"Dori nomi"}), h("div", {text:"Ishlab chiqaruvchi"}), h("div", {class:"c", text:"Soni"}), h("div", {class:"r", text:"Narxi"}),
       h("div", {class:"r", text:"Summa"}), h("div", {text:"Muddati"})); };
     if (!D.lines.length){
@@ -2616,7 +2615,6 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
     });
     $("#a-orders").addEventListener("click", function(){ switchView("orders"); });
     $("#a-hist").addEventListener("click", function(){ switchView("hist"); });
-
     $("#o-save").addEventListener("click", function(){ if (histRecord("qolda")) toast("Zakaz tarixga saqlandi."); });
     $("#h-flt").addEventListener("change", function(){ histFirm = this.value; histSel = null; renderHist(); });
     $("#h-dl").addEventListener("click", function(e){
@@ -2976,36 +2974,6 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
     });
     document.addEventListener("click", function(e){ if (!$("#o-dlm").hidden && !e.target.closest(".xw")) closeDlm(); });
     $("#o-dlm").addEventListener("keydown", function(e){ if (e.key === "Escape"){ closeDlm(); $("#o-dl").focus(); } });
-    function closeTgm(){ $("#o-tgm").hidden = true; $("#o-tgf").setAttribute("aria-expanded", "false"); }
-    function sendTelegramFile(fmt){
-      var D = ordData(), arr = D.byFirm.get(ordFirm); if (!arr || !arr.length) return;
-      var nm = D.fm.get(ordFirm) || "(firma yo'q)", f;
-      try { f = buildFile(fmt, nm, arr); } catch (err){ toast("Faylni tayyorlab bo'lmadi."); return; }
-      if (!dl){ toast("Bu yerda fayl yuklab bo'lmaydi."); return; }
-      Promise.resolve(dl.save({filename:f.name, data:f.data})).then(function(){
-        histRecord("telegram");
-        var a = document.createElement("a");
-        a.href = "https://t.me/share/url?url=%20&text=" + encodeURIComponent(trl("Zakaz:") + " " + nm + " (" + arr.length + ")"); a.target = "_blank"; a.rel = "noopener noreferrer"; a.style.display = "none";
-        document.body.append(a); a.click(); a.remove();
-        toast("Fayl saqlandi: " + f.name + ". Telegramda skrepka bilan shu faylni tanlab yuboring.");
-      }, function(e){
-        if (!e || e.code !== "declined") toast("Faylni saqlab bo'lmadi.");
-      });
-    }
-    function tgFmt(){ try { var v = localStorage.getItem("qp.tgfmt"); return /^(xlsx|docx|pdf)$/.test(v) ? v : "xlsx"; } catch(e){ return "xlsx"; } }
-    $("#o-tg").addEventListener("click", function(e){ e.stopPropagation(); closeDlm(); closeTgm(); sendTelegramFile(tgFmt()); });
-    $("#o-tgf").addEventListener("click", function(e){
-      e.stopPropagation(); closeDlm();
-      var m = $("#o-tgm"); m.hidden = !m.hidden; this.setAttribute("aria-expanded", m.hidden ? "false" : "true");
-      if (!m.hidden) m.querySelector("button").focus();
-    });
-    $("#o-tgm").addEventListener("click", function(e){
-      var b = e.target.closest("button[data-tg]"); if (!b) return;
-      closeTgm();
-      if (b.dataset.tg === "txt") sendTelegram(); else { try { localStorage.setItem("qp.tgfmt", b.dataset.tg); } catch(e2){} sendTelegramFile(b.dataset.tg); }
-    });
-    $("#o-tgm").addEventListener("keydown", function(e){ if (e.key === "Escape"){ closeTgm(); $("#o-tgf").focus(); } });
-    document.addEventListener("click", function(e){ if (!$("#o-tgm").hidden && !e.target.closest(".xw")) closeTgm(); });
     $("#fnd-ok").addEventListener("click", function(){ fndDone(true); });
     $("#fnd-cancel").addEventListener("click", function(){ fndDone(false); });
     $("#fnd-x").addEventListener("click", function(){ fndDone(false); });
@@ -3934,7 +3902,7 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
 <script>
 
 (function(){
-  var BUILD = 11, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
+  var BUILD = 12, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
   var DESK = /Electron/.test(navigator.userAgent);
   if (DESK && !window.qpDesktop){ var sc = document.getElementById("set-hup"); if (sc && sc.parentNode) sc.parentNode.hidden = true; return; }
   function $(s){ return document.querySelector(s); }
