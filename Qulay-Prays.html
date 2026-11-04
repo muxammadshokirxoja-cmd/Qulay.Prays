@@ -564,7 +564,7 @@ body.liclock .app,body.liclock .zm,body.liclock .auth:not(#lic),body.liclock .up
 #lic .auth-code{font-size:17px}
 </style>
 </head><body>
-<!--QULAY-PRAYS-BUILD:23-->
+<!--QULAY-PRAYS-BUILD:24-->
 <div class="upd" id="upd" hidden role="status"><span id="upd-t"></span><button type="button" class="btn" id="upd-go">Yangilash</button><button type="button" class="btn" id="upd-x" aria-label="Yopish" title="Yopish">&times;</button></div>
 <div class="auth" id="lic" hidden><form class="auth-c" id="lic-f" autocomplete="off">
 <h2>Dasturni ochish</h2>
@@ -1534,8 +1534,9 @@ body.liclock .app,body.liclock .zm,body.liclock .auth:not(#lic),body.liclock .up
   var LC = new Map();
   function loose(s){ var v = LC.get(s); if (v === undefined){ v = loose0(s); if (LC.size > 80000) LC.clear(); LC.set(s, v); } return v; }
   function loose0(s){ return s.replace(/[aeiou]/g, "a").replace(/b/g, "p").replace(/d/g, "t").replace(/v/g, "f").replace(/z/g, "s").replace(/g/g, "k").replace(/(.)\1+/g, "$1"); }
-  var strictMode = false;
-  function has(hay, needle){ return hay.indexOf(needle) >= 0 || (!strictMode && needle.length >= 4 && loose(hay).indexOf(loose(needle)) >= 0); }
+  var strictMode = false, prefixMode = false, PWC = new Map();
+  function wordStart(hay, needle){ var v = PWC.get(hay); if (v === undefined){ v = " " + hay.replace(/[\s.,;:()\[\]{}\-_\/\\"'\u00ab\u00bb\u2116#%+*=!?]+/g, " "); if (PWC.size > 80000) PWC.clear(); PWC.set(hay, v); } return v.indexOf(" " + needle) >= 0; }
+  function has(hay, needle){ if (prefixMode) return wordStart(hay, needle); return hay.indexOf(needle) >= 0 || (!strictMode && needle.length >= 4 && loose(hay).indexOf(loose(needle)) >= 0); }
   function firmsSorted(){ return firms.slice().sort(function(a,b){ return coll.compare(a.name || "", b.name || ""); }); }
   function firmDrugs(id){ return drugs.filter(function(d){ return d.firmId === id; }); }
   function queue(id, fn){
@@ -1887,10 +1888,10 @@ body.liclock .app,body.liclock .zm,body.liclock .auth:not(#lic),body.liclock .up
     else if (c === "expiry"){ sflt.expQ = ""; sflt.expFrom = ""; sflt.expTo = ""; }
   }
   function filteredDrugs(){
-    strictMode = true;
+    strictMode = true; prefixMode = true;
     var r = filteredDrugs0();
-    if (!r.length){ strictMode = false; r = filteredDrugs0(); }
-    strictMode = false;
+    if (!r.length){ prefixMode = false; r = filteredDrugs0(); }
+    strictMode = false; prefixMode = false;
     return r;
   }
   function filteredDrugs0(){
@@ -3967,7 +3968,7 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
 <script>
 
 (function(){
-  var BUILD = 23, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
+  var BUILD = 24, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
   var DESK = /Electron/.test(navigator.userAgent);
   if (DESK && !window.qpDesktop){ var sc = document.getElementById("set-hup"); if (sc && sc.parentNode) sc.parentNode.hidden = true; return; }
   function $(s){ return document.querySelector(s); }
