@@ -177,6 +177,9 @@ html{scrollbar-color:var(--grid) var(--bg)}
 #view-search #t-name{border:3px solid var(--accent);border-radius:10px;height:46px;padding:0 14px;font-size:18px!important;font-weight:600;background:var(--surface);box-shadow:0 0 0 3px var(--accent-soft),inset 0 1px 3px rgba(0,0,0,.08)}
 #view-search #t-name:focus{outline:none;box-shadow:0 0 0 4px var(--accent-soft),0 0 0 6px var(--accent)}
 #view-search #t-name::placeholder{font-weight:400;color:var(--muted)}
+#t-upload{background:var(--accent);color:var(--accent-fg);border:0;font-weight:700;font-size:14px;padding:8px 12px;border-radius:8px;letter-spacing:.2px;cursor:pointer}
+#t-upload:hover{filter:brightness(1.1)}
+.dlg-qty::placeholder{font-size:15px;font-weight:400;color:var(--muted)}
 .tb-sp{flex:1 1 12px}
 .tb-sum{font-size:22px;margin-right:6px}
 .seg{display:inline-flex;border:1px solid var(--accent);border-radius:6px;overflow:hidden}
@@ -551,7 +554,7 @@ body.authlock .upd{display:none}
 </style>
 
 </head><body>
-<!--QULAY-PRAYS-BUILD:19-->
+<!--QULAY-PRAYS-BUILD:20-->
 <div class="upd" id="upd" hidden role="status"><span id="upd-t"></span><button type="button" class="btn" id="upd-go">Yangilash</button><button type="button" class="btn" id="upd-x" aria-label="Yopish" title="Yopish">&times;</button></div>
 <script>
 /* ===== Oflayn rejim: Claude bazasi o'rniga shu kompyuterdagi brauzer xotirasi ===== */
@@ -2178,7 +2181,7 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
     $("#dlg-firm").textContent = (f && f.name) || "—";
     $("#dlg-exp").textContent = fmtDate(d.expiry) || "—";
     $("#dlg-note").value = l ? l.n : "";
-    $("#dlg-qty").value = l ? "" : "1"; $("#dlg-qty").placeholder = l ? "+5 yoki \u22125" : "";
+    $("#dlg-qty").value = l ? "" : "1"; $("#dlg-qty").placeholder = l ? "+ yoki \u2212" : "";
     $("#dlg-price").value = fmtPrice(linePrice(l, d));
     $("#dlg-remove").hidden = !l;
     $("#dlg-back").hidden = false; syncModalLock(); updateDlgSum();
@@ -3964,7 +3967,7 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
 <script>
 
 (function(){
-  var BUILD = 19, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
+  var BUILD = 20, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
   var DESK = /Electron/.test(navigator.userAgent);
   if (DESK && !window.qpDesktop){ var sc = document.getElementById("set-hup"); if (sc && sc.parentNode) sc.parentNode.hidden = true; return; }
   function $(s){ return document.querySelector(s); }
