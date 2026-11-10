@@ -746,9 +746,9 @@ html #view-orders .ofl-i .nmx{padding:8px 20px;display:block}
 html #view-orders .ofl-i .ofs{margin-left:10px;white-space:nowrap}
 html #view-orders .ofl-i:hover{background:#F7F7F2}
 html #view-orders .ofl-i.on{background:#FFDF2E;font-weight:400}
-html #view-orders .ofl-f{display:flex;flex-direction:column;gap:2px;padding:8px 20px;background:var(--c1-head);border-bottom:1px solid #CFCFCF;font-size:14px;position:sticky;bottom:0}
-html #view-orders .ofl-f span{color:var(--muted)}html #view-orders .ofl-f .ofl-fl{color:var(--fg);font-weight:700;font-size:15px}
-html #view-orders .ofl-f b{font-size:18px;font-weight:700;color:var(--fg);background:var(--c1-price);align-self:flex-start;padding:1px 8px;border-radius:2px}
+html #view-orders .ofl-f{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 20px;background:var(--c1-head);border-bottom:1px solid #CFCFCF;font-size:14px;position:sticky;bottom:0}
+html #view-orders .ofl-f .ofl-fl{color:var(--fg);font-weight:700;font-size:14px}
+html #view-orders .ofl-f b{font-size:14px;font-weight:700;color:var(--fg);background:var(--c1-price);padding:1px 6px;border-radius:2px;white-space:nowrap}
 html #view-orders .otw{border:1px solid #BDBDBD;border-radius:0;display:flex;flex-direction:column;background:var(--surface);overflow:auto}
 html #view-orders .ot{display:flex;flex-direction:column;flex:1;min-height:100%;min-width:820px}
 html #view-orders .ot-b{flex:1}
@@ -779,7 +779,7 @@ html #view-orders .otr .oq:focus{border-color:var(--c1-yb);background:var(--surf
 </style>
 
 </head><body>
-<!--QULAY-PRAYS-BUILD:29-->
+<!--QULAY-PRAYS-BUILD:30-->
 <div class="upd" id="upd" hidden role="status"><span id="upd-t"></span><button type="button" class="btn" id="upd-go">Yangilash</button><button type="button" class="btn" id="upd-x" aria-label="Yopish" title="Yopish">&times;</button></div>
 <script>
 /* ===== Oflayn rejim: Claude bazasi o'rniga shu kompyuterdagi brauzer xotirasi ===== */
@@ -2519,9 +2519,8 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
       ll.append(h("button", {type:"button", class:"ofl-i" + (fid === ordFirm ? " on" : ""), onclick:function(){ ordFirm = fid; ordSel = null; ordFocus = "firm"; $("#o-ask").hidden = true; renderOrders(); }},
         h("span", {class:"nmx"}, h("span", {text:D.fm.get(fid) || "(firma yo'q)"}), h("span", {class:"ofs", text:"( " + (fmtPrice(sub) || "0") + " so'm )"}))));
     });
-    ll.append(h("div", {class:"ofl-f"}, h("span", {class:"ofl-fl", text:"Umumiy narx:"}),
-      h("b", {text:(fmtPrice(D.lines.reduce(function(sum, x){ return sum + lineSum(x); }, 0)) || "0") + " so'm"}),
-      h("span", {text:D.ids.length + " ta firma, " + D.lines.length + " ta dori"})));
+    ll.append(h("div", {class:"ofl-f", title:D.ids.length + " ta firma, " + D.lines.length + " ta dori"}, h("span", {class:"ofl-fl", text:"Umumiy narx:"}),
+      h("b", {text:(fmtPrice(D.lines.reduce(function(sum, x){ return sum + lineSum(x); }, 0)) || "0") + " so'm"})));
     // o'ng: jadval
     var tb = h("div", {class:"ot-b"});
     var tbl = h("div", {class:"ot"}, HEAD(), tb);
@@ -4442,7 +4441,7 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
 <script>
 
 (function(){
-  var BUILD = 29, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
+  var BUILD = 30, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
   var DESK = /Electron/.test(navigator.userAgent);
   if (DESK && !window.qpDesktop){ var sc = document.getElementById("set-hup"); if (sc && sc.parentNode) sc.parentNode.hidden = true; return; }
   function $(s){ return document.querySelector(s); }
