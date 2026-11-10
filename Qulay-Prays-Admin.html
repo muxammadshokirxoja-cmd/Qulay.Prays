@@ -762,6 +762,7 @@ html #view-orders .otr.oth>*+*{border-left:1px solid #D6D6D6}
 html #view-orders .otr.oth .sm0{font-weight:700}
 html #view-orders .otr.oth .oss{flex-direction:row;justify-content:space-between;align-items:center;cursor:pointer}
 html #view-orders .otr.oth .oss:hover{background:#E6E6E6}
+html #view-orders .otr.oth .oss{display:flex;gap:6px}html #view-orders .otr.oth .oss.c{justify-content:center}html #view-orders .otr.oth .oss.r{justify-content:flex-end}html #view-orders .otr.oth .oss.r b{order:-1}html #view-orders .otr.oth .oss b{min-width:10px;font-weight:700}html #view-orders .otr.oth .oss.on{color:var(--fg)}html #view-orders .otr.oth .oss:focus-visible{outline:2px solid var(--c1-yb);outline-offset:-2px}
 html #view-orders .otr .sm{background:var(--c1-price);font-family:var(--f-sans);font-weight:700}
 html #view-orders .otr .pr{font-family:var(--f-sans)}
 html #view-orders .otr .nt{font-size:14px;color:var(--muted)}
@@ -779,7 +780,7 @@ html #view-orders .otr .oq:focus{border-color:var(--c1-yb);background:var(--surf
 </style>
 
 </head><body>
-<!--QULAY-PRAYS-BUILD:30-->
+<!--QULAY-PRAYS-BUILD:31-->
 <div class="upd" id="upd" hidden role="status"><span id="upd-t"></span><button type="button" class="btn" id="upd-go">Yangilash</button><button type="button" class="btn" id="upd-x" aria-label="Yopish" title="Yopish">&times;</button></div>
 <script>
 /* ===== Oflayn rejim: Claude bazasi o'rniga shu kompyuterdagi brauzer xotirasi ===== */
@@ -2468,7 +2469,7 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
   }
 
   /* Zakaslar oynasi: har bir firma alohida */
-  var ordFirm = null, ordSel = null, ordFocus = "row", ordNSort = 1, ordFSort = 1;
+  var ordFirm = null, ordSel = null, ordFocus = "row", ordNSort = 1, ordFSort = 1, ordKey = "name";
   function ordData(){
     var lines = basketLines();
     var fm = new Map(firms.map(function(f){ return [f.id, f.name || ""]; }));
@@ -2489,10 +2490,16 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
     if (!D.lines.length) $("#o-ask").hidden = true;
     ["o-fdel", "o-dl", "o-prn", "o-rdel", "o-save", "o-plus", "o-minus"].forEach(function(id){ $("#" + id).disabled = !D.lines.length; });
     var HEAD = function(){
-      var hn = h("div", {class:"oss", title:"Tartiblash"}, h("span", {text:"Dori nomi"}), h("b", {text:ordNSort > 0 ? "↓" : "↑"}));
-      hn.addEventListener("click", function(){ ordNSort = -ordNSort; renderOrders(); });
-      return h("div", {class:"otr oth"}, hn, h("div", {text:"Izoh"}), h("div", {class:"c", text:"Zakaz"}), h("div", {class:"r", text:"Narxi"}),
-        h("div", {class:"sm0", text:"Summa"}), h("div", {class:"c", text:"Muddati"}), h("div", {text:"Ishlab chiqaruvchi"}));
+      function hc(k, label, cls){
+        var on = ordKey === k;
+        var el = h("div", {class:"oss" + (cls ? " " + cls : "") + (on ? " on" : ""), title:"Tartiblash", role:"button", tabindex:"0"}, h("span", {text:label}), h("b", {text:on ? (ordNSort > 0 ? "↓" : "↑") : ""}));
+        function go(){ if (ordKey === k) ordNSort = -ordNSort; else { ordKey = k; ordNSort = 1; } renderOrders(); }
+        el.addEventListener("click", go);
+        el.addEventListener("keydown", function(e){ if (e.key === "Enter" || e.key === " "){ e.preventDefault(); go(); } });
+        return el;
+      }
+      return h("div", {class:"otr oth"}, hc("name", "Dori nomi"), hc("note", "Izoh"), hc("q", "Zakaz", "c"), hc("price", "Narxi", "r"),
+        hc("sum", "Summa", "sm0"), hc("exp", "Muddati", "c"), hc("maker", "Ishlab chiqaruvchi"));
     };
     var LHEAD = function(){
       var hl = h("div", {class:"ofl-h oss", title:"Tartiblash"}, h("span", {class:"nmx", text:"Optovik"}), h("b", {text:ordFSort > 0 ? "↑" : "↓"}));
@@ -2508,7 +2515,16 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
     box.style.display = "";
     if (!D.byFirm.has(ordFirm)) ordFirm = D.ids[0];
     var arr = D.byFirm.get(ordFirm).slice();
-    if (ordNSort < 0) arr.reverse();
+    var sk = {
+      name:function(x){ return x.d.name || ""; }, note:function(x){ return x.l.n || ""; }, maker:function(x){ return x.d.maker || ""; },
+      exp:function(x){ return x.d.expiry || ""; }, q:function(x){ return x.l.q || 0; },
+      price:function(x){ var v = linePrice(x.l, x.d); return v == null ? -1 : v; }, sum:function(x){ return lineSum(x) || 0; }
+    }[ordKey] || function(x){ return x.d.name || ""; };
+    arr.sort(function(a, b){
+      var va = sk(a), vb = sk(b), c = typeof va === "number" ? va - vb : coll.compare(va, vb);
+      if (!c) c = coll.compare(a.d.name || "", b.d.name || "");
+      return c * ordNSort;
+    });
     if (!arr.some(function(x){ return x.d.id === ordSel; })) ordSel = arr.length ? arr[0].d.id : null;
     // chap: firmalar
     var ll = h("div", {class:"ofl-l"});
@@ -4441,7 +4457,7 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
 <script>
 
 (function(){
-  var BUILD = 30, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
+  var BUILD = 31, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
   var DESK = /Electron/.test(navigator.userAgent);
   if (DESK && !window.qpDesktop){ var sc = document.getElementById("set-hup"); if (sc && sc.parentNode) sc.parentNode.hidden = true; return; }
   function $(s){ return document.querySelector(s); }
