@@ -602,7 +602,7 @@ html #view-search .row.head.res .hb.on{color:var(--accent);font-weight:700}
 html #view-search .row.head.res .hb .hi{font-size:12px;color:var(--fg)}
 html #view-search .row.res{border-top:1px solid var(--c1-line)}
 html #view-search #search-out .row.res{contain-intrinsic-size:auto 34px}
-html #view-search .res .cell{padding:4px 10px;gap:0;justify-content:flex-start;line-height:1.25}
+html #view-search .res .cell{padding:4px 10px;gap:0;justify-content:center;line-height:1.25}
 html #view-search .res .cell+.cell{border-left:0}
 html #view-search .res .c-name{padding-left:14px}
 html #view-search .res .c-price{background:var(--c1-price);font-family:var(--f-sans);font-weight:700;font-size:calc(var(--fs,12) * 1px + 3px);text-align:right;align-items:flex-end;justify-content:center}
@@ -780,7 +780,7 @@ html #view-orders .otr .oq:focus{border-color:var(--c1-yb);background:var(--surf
 </style>
 
 </head><body>
-<!--QULAY-PRAYS-BUILD:31-->
+<!--QULAY-PRAYS-BUILD:32-->
 <div class="upd" id="upd" hidden role="status"><span id="upd-t"></span><button type="button" class="btn" id="upd-go">Yangilash</button><button type="button" class="btn" id="upd-x" aria-label="Yopish" title="Yopish">&times;</button></div>
 <script>
 /* ===== Oflayn rejim: Claude bazasi o'rniga shu kompyuterdagi brauzer xotirasi ===== */
@@ -2276,7 +2276,7 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
   }
 
   /* ---------- tanlash rejimi, zakaz oynasi va Zakaslar ---------- */
-  var mode = "search", selRow = null, basket = {}, dlgId = null, dlgReturn = null;
+  var fieldNav = false, mode = "search", selRow = null, basket = {}, dlgId = null, dlgReturn = null;
   function lineOf(id){
     var v = basket[id]; if (v == null) return null;
     if (typeof v === "number") return {q:v, n:"", p:null};
@@ -2883,8 +2883,10 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
       sflt.name = e.target.value;
       clearTimeout(typT); typT = setTimeout(function(){ typT = null; renderSearch(); }, 90);
     });
+    $("#t-name").addEventListener("input", function(){ fieldNav = false; });
     $("#t-name").addEventListener("keydown", function(e){
       if (e.key !== "Enter") return;
+      if (fieldNav && selRow && $("#search-out").querySelector(".row.res.sel")){ e.preventDefault(); openDrugDialog(selRow); return; }
       flushType();
       var first = $("#search-out").querySelector(".row.res"); if (!first) return;
       e.preventDefault();
@@ -2932,7 +2934,16 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
     $("#search-out").addEventListener("dblclick", function(e){
       return; /* ikki marta bosish «click» orqali ishlaydi */
     });
+    function showRow(row, lst){
+      if (!row || !lst) return;
+      var z = parseFloat(document.body.style.zoom) || 1;
+      var lr = lst.getBoundingClientRect(), rr = row.getBoundingClientRect(), hd = lst.querySelector(".row.head");
+      var top = hd ? hd.getBoundingClientRect().bottom : lr.top, bot = lr.bottom - (lst.offsetHeight - lst.clientHeight) * z;
+      if (rr.top < top) lst.scrollTop -= (top - rr.top) / z;
+      else if (rr.bottom > bot) lst.scrollTop += (rr.bottom - bot) / z;
+    }
     $("#search-out").addEventListener("keydown", function(e){
+      if (e.key === "Enter" && (e.target.id === "t-name" || e.target.id === "t-maker")) return;
       if (e.key !== "Enter" && e.key !== " ") return;
       var row = rowOf(e); if (!row || e.target !== row) return;
       e.preventDefault(); selRow = row.dataset.id; openDrugDialog(selRow);
@@ -2941,15 +2952,30 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
       if (view !== "search") return;
       if (e.key === "F7"){ e.preventDefault(); $("#t-name").focus(); $("#t-name").select(); }
       if (e.key === "F8"){ e.preventDefault(); $("#t-maker").focus(); $("#t-maker").select(); }
-      if ((e.key === "ArrowDown" || e.key === "ArrowUp") && !$("#dlg-back").hidden === false){
-        var t = e.target, ok = t === document.body || t.id === "t-name" || (t.classList && t.classList.contains("row"));
+      var NAV = {ArrowDown:1, ArrowUp:1, PageDown:1, PageUp:1, Home:1, End:1};
+      if (NAV[e.key] && $("#dlg-back").hidden && !e.altKey){
+        var t = e.target, inName = t.id === "t-name" || t.id === "t-maker";
+        var ok = t === document.body || (t.classList && t.classList.contains("row")) || (inName && (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "PageDown" || e.key === "PageUp"));
         if (!ok) return;
         var rows = Array.prototype.slice.call($("#search-out").querySelectorAll(".row.res")); if (!rows.length) return;
         e.preventDefault();
+        var lst = document.querySelector("#lw .list");
         var cur = rows.findIndex(function(r){ return r.classList.contains("sel"); });
-        var nx = e.key === "ArrowDown" ? (cur < 0 ? 0 : Math.min(cur + 1, rows.length - 1)) : (cur < 0 ? 0 : Math.max(cur - 1, 0));
+        var rh = rows[0].getBoundingClientRect().height || 1, hd = lst.querySelector(".row.head");
+        var page = Math.max(1, Math.floor((lst.getBoundingClientRect().height - (hd ? hd.getBoundingClientRect().height : 0)) / rh) - 1);
+        var nx;
+        if (cur < 0) nx = e.key === "End" ? rows.length - 1 : 0;
+        else if (e.key === "ArrowDown") nx = cur + 1;
+        else if (e.key === "ArrowUp") nx = cur - 1;
+        else if (e.key === "PageDown") nx = cur + page;
+        else if (e.key === "PageUp") nx = cur - page;
+        else if (e.key === "Home") nx = 0;
+        else nx = rows.length - 1;
+        nx = Math.max(0, Math.min(rows.length - 1, nx));
         if (cur >= 0) rows[cur].classList.remove("sel");
-        selRow = rows[nx].dataset.id; rows[nx].classList.add("sel"); rows[nx].focus();
+        selRow = rows[nx].dataset.id; rows[nx].classList.add("sel");
+        showRow(rows[nx], lst);
+        if (!inName) rows[nx].focus({preventScroll:true}); else fieldNav = true;
       }
     });
     $("#pb-period").addEventListener("change", recalc);
@@ -3380,13 +3406,15 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
       function upd(){
         var vs = $("#view-search"), lst = document.querySelector("#lw .list"), vis = !!(vs && !vs.hidden && lst);
         root.classList.toggle("svlock", vis);
-        if (!vis){ if (lst) lst.style.maxHeight = ""; return; }
-        window.scrollTo(0, 0);
-        root.style.setProperty("--sv-pad", (48 + Math.min(400, Math.round(lst.scrollHeight * 0.02))) + "px");
-        var gr = lst.getBoundingClientRect(), tail = vs.getBoundingClientRect().bottom - gr.bottom;
-        lst.style.maxHeight = Math.max(160, window.innerHeight - gr.top - tail - 16) + "px";
-        var over = vs.getBoundingClientRect().bottom - (window.innerHeight - 16);
-        if (Math.abs(over) > 2 && lst.scrollHeight > lst.clientHeight){ lst.style.maxHeight = Math.max(160, parseFloat(lst.style.maxHeight) - over) + "px"; }
+        if (!vis){ if (lst){ lst.style.maxHeight = ""; lst.style.height = ""; } return; }
+        if (window.scrollY) window.scrollTo(0, 0);
+        root.style.setProperty("--sv-pad", "0px");
+        /* masshtab (zoom) hisobga olinadi: o'lchovlar ekran pikselida, balandlik esa sahifa pikselida beriladi */
+        var z = parseFloat(document.body.style.zoom) || 1;
+        var gr = lst.getBoundingClientRect(), tail = Math.max(0, vs.getBoundingClientRect().bottom - gr.bottom);
+        var want = Math.max(160, (window.innerHeight - gr.top - tail - 12) / z);
+        var cur = parseFloat(lst.style.height) || 0;
+        if (Math.abs(cur - want) > 1){ lst.style.height = want + "px"; lst.style.maxHeight = want + "px"; }
       }
       window.addEventListener("resize", upd); setInterval(upd, 400);
     })();
@@ -4457,7 +4485,7 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
 <script>
 
 (function(){
-  var BUILD = 31, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
+  var BUILD = 32, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
   var DESK = /Electron/.test(navigator.userAgent);
   if (DESK && !window.qpDesktop){ var sc = document.getElementById("set-hup"); if (sc && sc.parentNode) sc.parentNode.hidden = true; return; }
   function $(s){ return document.querySelector(s); }
