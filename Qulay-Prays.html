@@ -805,9 +805,78 @@ html #view-orders .otr .oq:focus{border-color:var(--c1-yb);background:var(--surf
 @media (max-width:760px){ html #view-orders .c1ob,html #view-orders .osplit{grid-template-columns:minmax(0,1fr)} html #view-orders .c1r{justify-content:flex-start} }
 </style>
 
+<style>
+body.liclock .app,body.liclock .zm,body.liclock .auth:not(#lic),body.liclock .upd{display:none!important}
+#lic{z-index:4000}
+#lic .auth-code{font-size:17px}
+</style>
 </head><body>
-<!--QULAY-PRAYS-BUILD:33-->
+<!--QULAY-PRAYS-BUILD:34-->
 <div class="upd" id="upd" hidden role="status"><span id="upd-t"></span><button type="button" class="btn" id="upd-go">Yangilash</button><button type="button" class="btn" id="upd-x" aria-label="Yopish" title="Yopish">&times;</button></div>
+<div class="auth" id="lic" hidden><form class="auth-c" id="lic-f" autocomplete="off">
+<h2>Dasturni ochish</h2>
+<p>Dasturdan foydalanish uchun ochish kodi kerak. Quyidagi kompyuter kodini administratorga yuboring va u bergan kodni kiriting.</p>
+<span class="auth-l">Kompyuter kodi</span>
+<div class="auth-code" id="lic-id" data-notr></div>
+<div class="auth-b"><button type="button" class="btn" id="lic-copy">Nusxalash</button></div>
+<label class="auth-l"><span>Ochish kodi</span><input id="lic-code" class="field" type="text" autocomplete="off" spellcheck="false"></label>
+<p class="auth-e" id="lic-err"></p>
+<div class="auth-b"><button type="submit" class="btn" id="lic-go" style="background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:600">Ochish</button></div>
+</form></div>
+<script>
+
+(function(){
+  var PUB = {"kty": "EC", "crv": "P-256", "x": "Tp9IsgH_qmx42f_TNbiQe3Hn0VOguXsLc23sqRsJ3HI", "y": "ZcfDC5S4qV1_B6xOq5qmgXx832bAnWu5S5YIkkQgruY"}, LS_ID = "qp.mid", LS_KEY = "qp.lic", AL = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  var el = document.getElementById("lic"), idEl = document.getElementById("lic-id"), codeEl = document.getElementById("lic-code"), errEl = document.getElementById("lic-err"), frm = document.getElementById("lic-f");
+  function g(k){ try { return localStorage.getItem(k) || ""; } catch(e){ return ""; } }
+  function s(k, v){ try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch(e){} }
+  function mkId(){ var a = new Uint8Array(16), o = ""; crypto.getRandomValues(a); for (var i = 0; i < 16; i++) o += AL.charAt(a[i] % 32); return o; }
+  var mid = g(LS_ID);
+  try { if (!/^[A-Z2-9]{16}$/.test(mid)){ mid = mkId(); s(LS_ID, mid); } } catch(e){ mid = "0000000000000000"; }
+  idEl.textContent = mid.match(/.{4}/g).join("-");
+  function lock(){ el.hidden = false; document.body.classList.add("liclock"); }
+  function unlock(){ el.hidden = true; document.body.classList.remove("liclock"); try { window.dispatchEvent(new Event("resize")); } catch(e){} }
+  function unb64u(t){ t = t.replace(/-/g, "+").replace(/_/g, "/"); while (t.length % 4) t += "="; var b = atob(t), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+  function today(){ var d = new Date(); return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate(); }
+  // natija: "ok" | "expired" | "bad" | "nosupport"
+  function check(code){
+    if (!(window.crypto && crypto.subtle)) return Promise.resolve("nosupport");
+    try {
+      var p = String(code || "").replace(/\s+/g, "").split(".");
+      if (p.length !== 3 || p[0] !== "QP1" || !/^(0|\d{8})$/.test(p[1])) return Promise.resolve("bad");
+      var sig = unb64u(p[2]); if (sig.length !== 64) return Promise.resolve("bad");
+      var msg = new TextEncoder().encode("QP1|" + mid + "|" + p[1]);
+      return crypto.subtle.importKey("jwk", PUB, {name:"ECDSA", namedCurve:"P-256"}, false, ["verify"]).then(function(k){
+        return crypto.subtle.verify({name:"ECDSA", hash:"SHA-256"}, k, sig, msg);
+      }).then(function(ok){
+        if (!ok) return "bad";
+        if (p[1] !== "0" && +p[1] < today()) return "expired";
+        return "ok";
+      }).catch(function(){ return "bad"; });
+    } catch(e){ return Promise.resolve("bad"); }
+  }
+  var MSG = {bad:"Kod noto'g'ri yoki bu kompyuter uchun emas.", expired:"Kod muddati tugagan. Administratordan yangi kod oling.", nosupport:"Bu brauzerda kodni tekshirib bo'lmadi."};
+  function recheck(){ check(g(LS_KEY)).then(function(r){ if (r !== "ok"){ lock(); } }); }
+  lock();
+  var stored = g(LS_KEY);
+  if (stored) check(stored).then(function(r){ if (r === "ok") unlock(); else if (r === "expired") errEl.textContent = MSG.expired; });
+  frm.addEventListener("submit", function(ev){
+    ev.preventDefault(); errEl.textContent = "";
+    var c = codeEl.value.trim(); if (!c){ errEl.textContent = "Kodni kiriting."; return; }
+    check(c).then(function(r){
+      if (r === "ok"){ s(LS_KEY, c.replace(/\s+/g, "")); codeEl.value = ""; unlock(); }
+      else errEl.textContent = MSG[r] || MSG.bad;
+    });
+  });
+  document.getElementById("lic-copy").addEventListener("click", function(){
+    var b = this, t = idEl.textContent;
+    function ok(){ var o = b.textContent; b.textContent = "Nusxalandi."; setTimeout(function(){ b.textContent = o; }, 1500); }
+    try { navigator.clipboard.writeText(t).then(ok, function(){ sel(); }); } catch(e){ sel(); }
+    function sel(){ try { var r = document.createRange(); r.selectNodeContents(idEl); var x = getSelection(); x.removeAllRanges(); x.addRange(r); } catch(e){} }
+  });
+  setInterval(recheck, 3600000);
+})();
+</script>
 <script>
 /* ===== Oflayn rejim: Claude bazasi o'rniga shu kompyuterdagi brauzer xotirasi ===== */
 (function(){
@@ -4588,7 +4657,7 @@ function todayISO(){ var t = new Date(); return t.getFullYear() + "-" + pad(t.ge
 <script>
 
 (function(){
-  var BUILD = 33, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
+  var BUILD = 34, DEF = "muxammadshokirxoja-cmd/Qulay.Prays", KEY = "zakas.upd", meta = null, busy = false;
   var DESK = /Electron/.test(navigator.userAgent);
   if (DESK && !window.qpDesktop){ var sc = document.getElementById("set-hup"); if (sc && sc.parentNode) sc.parentNode.hidden = true; return; }
   function $(s){ return document.querySelector(s); }
